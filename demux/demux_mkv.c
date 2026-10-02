@@ -3574,7 +3574,6 @@ static void demux_mkv_seek(demuxer_t *demuxer, double seek_pts, int flags)
     mkv_demuxer_t *mkv_d = demuxer->priv;
     int64_t old_pos = stream_tell(demuxer->stream);
     uint64_t v_tnum = -1;
-    uint64_t a_tnum = -1;
     bool st_active[STREAM_TYPE_COUNT] = {0};
     mkv_seek_reset(demuxer);
     for (int i = 0; i < mkv_d->num_tracks; i++) {
@@ -3583,8 +3582,6 @@ static void demux_mkv_seek(demuxer_t *demuxer, double seek_pts, int flags)
             st_active[track->stream->type] = true;
             if (track->type == MATROSKA_TRACK_VIDEO)
                 v_tnum = track->tnum;
-            if (track->type == MATROSKA_TRACK_AUDIO)
-                a_tnum = track->tnum;
         }
     }
 
@@ -3606,7 +3603,7 @@ static void demux_mkv_seek(demuxer_t *demuxer, double seek_pts, int flags)
         int64_t target_timecode = seek_pts * 1e9 + 0.5;
 
         if (create_index_until(demuxer, target_timecode) >= 0) {
-            int seek_id = st_active[STREAM_VIDEO] ? v_tnum : a_tnum;
+            int seek_id = st_active[STREAM_VIDEO] ? v_tnum : -1;
             index = seek_with_cues(demuxer, seek_id, target_timecode, flags);
             if (!index)
                 index = seek_with_cues(demuxer, -1, target_timecode, flags);
